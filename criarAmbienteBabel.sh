@@ -21,6 +21,11 @@
 #           - Cria o script dev para executar o webpack-dev-server no seu projeto.
 #           - Cria o script build para executar o build do seu projeto.
 #           - Adiciona tratamento de erros.
+#
+#       v2.1 20-04-2022, Ruan Oliveira:
+#           - Adicionada a criação do sourceMapFileName. 
+#           - Arrumado o Bug do script de build.
+#
 
 # Licença: MIT.
 
@@ -50,7 +55,8 @@ module.exports = {
     mode: 'development',
     output: {
         path: path.resolve(__dirname, './public'),
-        filename: 'bundle.js'
+        filename: 'bundle.js',
+        sourceMapFilename: 'bundle.js.map'
     },
     devServer: {
         static: {
@@ -66,7 +72,7 @@ module.exports = {
     # Insere o script dev no package.json
     sed -i "/"scripts"/a\    \"dev\":\"webpack serve --mode=development \", " package.json 
     # Insere o script build no package.json
-    sed -i "/"scripts"/a\    \"build\":\"webpack serve --mode=production \", " package.json 
+    sed -i "/"scripts"/a\    \"build\":\"webpack --mode=production \", " package.json 
     
     echo "Finalizado, execute npm run dev, para rodar o ambiente de 
     desenvolvimento ou npm run build para o ambiente de produção."
