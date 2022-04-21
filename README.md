@@ -10,5 +10,8 @@ Este Shell Script cria instala e configura todos os arquivos necessários de for
 #### - Depois crie um projeto node.js
 ```npm init```
 
+#### - De permição de execução para o script
+```chmod +x ./criarAmbienteBabel.sh```
+
 #### - Mova o arquivo criarAmbienteBabel.sh pra pasta do seu projeto, E é só executar!
 ```./criarAmbienteBabel.sh ```
