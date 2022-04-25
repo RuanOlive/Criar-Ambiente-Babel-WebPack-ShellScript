@@ -1,13 +1,14 @@
 #!/bin/bash
 #
-# criarAmbienteBabel.sh - Cria um ambiente Babel no seu projeto node.js
+# criarAmbienteBabel.sh - Cria um ambiente Babel/WebPack no seu projeto node.js
 #
 # Site: https://github.com/RuanOlive
 # Autor: Ruan Oliveira Sarmento <ruansarmento732@gmail.com>
-# ------------------------------------------------------------------------
+#
+#------------------------------------------------------------------------
 # Este programa cria e instala os arquivos necessarios no seu projeto node.js 
 # para que você possa usar o babel.
-# -------------------------------------------------------------------------
+#-------------------------------------------------------------------------
 #
 # Histórico: 
 #
@@ -26,56 +27,90 @@
 #           - Adicionada a criação do sourceMapFileName. 
 #           - Arrumado o Bug do script de build.
 #
-
+#       v3.0 24-04-2022-Stable, Ruan Oliveira:
+#           - Código Totalmente Refatorado.
+#           - Adicionada Nova Configuração do WebPack5 e Babel.
+#           - Removida a instalação de node modules Deprecated.
+#           - Versão Stable(Estável) do script.
+#
 # Licença: MIT.
 
-#Verifica se o arquivo package.json existe.
+# Verifica se o arquivo package.json existe.
 if [[ -e ./package.json ]]; then
     echo "Criando Projeto Babel/WebPack no diretório atual..."
 
-    # Instala o Webpack e o Babel no seu projeto Node.js
-    npm i webpack webpack-cli @webpack-cli/serve webpack-dev-server @babel/polyfill --save-dev
+    #--------Instalação de dependencias--------
+
+    # WebPack
+    npm i webpack --save-dev
+
+    # Permite usar WebPack no terminal
+    npm i webpack-cli --save-dev
+
+    # Serve para criar um servidor de desenvolvimento
+    npm i webpack-dev-server --save-dev
+
+    # Babel
+    npm install babel-loader @babel/core --save-dev 
+    npm install @babel/preset-env --save-dev
+
+    #-------Adicionando Scripts no package.json-------
+
+    # Em desenvolvimento usaremos o comando "npm run dev".
+    sed -i "/"scripts"/a\    \"dev\":\"webpack-dev-server --mode=development \", " package.json 
+    
+    # Em produção usaremos o comando "npm run build".
+    sed -i "/"scripts"/a\    \"build\":\"webpack --mode=production \", " package.json 
+
+    #--------Criando arquivos--------
 
     # Cria a estrutura de arquivos básica do seu projeto.
     mkdir ./public
-    mkdir ./src
-    touch ./public/bundle.js
     touch ./public/index.html
+    mkdir ./src
     touch ./src/main.js
 
-    # Cria o aquivo de configuração do WebPack.
-    touch webpack.config.js
+    # Cria o arquivo de configuração do WebPack.
+    touch ./webpack.config.js
+
+    # Cria o arquivo de configuração do Babel.
+    touch ./babel.config.json
+
+    # Escreve todas as configurações necessárias dentro do arquivo de 
+    # configuração do Babel.
+    echo "{
+  \"presets\": [\"@babel/preset-env\"]
+}" > ./babel.config.json
 
     # Escreve todas as configurações necessárias dentro do arquivo de 
     # configuração do WebPack.
-    echo "const path = require('path')
+    echo "
+const path = require('path');
 
 module.exports = {
-    entry: ['@babel/polyfill', path.resolve(__dirname, './src/main.js')],
-    mode: 'development',
-    output: {
-        path: path.resolve(__dirname, './public'),
-        filename: 'bundle.js',
-        sourceMapFilename: 'bundle.js.map'
-    },
-    devServer: {
-        static: {
-            directory: path.join(__dirname, './public'),
-        },
-        compress: true,
-        port: 9000,
-    },
-    devtool: 'source-map'
-}
-    " > webpack.config.js
+  entry: './src/main.js',
+  mode: 'development',
+  output: {
+    path: path.resolve(__dirname, './public/'),
+    filename: 'bundle.js',
+  },
+  module: {
+    rules: [{ 
+      test: /\.m?js$/,
+      exclude: /node_modules/,
+      use: {
+        loader: 'babel-loader',
+        options: {
+          presets: ['@babel/preset-env']
+        }
+      }
+    }],
+  }
+};" > webpack.config.js
 
-    # Insere o script dev no package.json
-    sed -i "/"scripts"/a\    \"dev\":\"webpack serve --mode=development \", " package.json 
-    # Insere o script build no package.json
-    sed -i "/"scripts"/a\    \"build\":\"webpack --mode=production \", " package.json 
-    
+
     echo "Finalizado, execute npm run dev, para rodar o ambiente de 
-    desenvolvimento ou npm run build para o ambiente de produção."
+    desenvolvimento ou npm run build para criar o bundle.js ."
 else
     echo "O arquivo package.json não existe!, Execute npm init para criar um 
     projeto node.js"
